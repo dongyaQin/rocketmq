@@ -78,7 +78,7 @@ public class NamesrvStartup {
             System.exit(-1);
             return null;
         }
-
+        System.out.println(System.getenv());
         final NamesrvConfig namesrvConfig = new NamesrvConfig();
         final NettyServerConfig nettyServerConfig = new NettyServerConfig();
         nettyServerConfig.setListenPort(9876);
