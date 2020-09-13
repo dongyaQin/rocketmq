@@ -97,8 +97,9 @@ public class NamesrvController {
             @Override
             public void run() {
                 NamesrvController.this.kvConfigManager.printAllPeriodically();
+                NamesrvController.this.routeInfoManager.printAllPeriodically();
             }
-        }, 1, 10, TimeUnit.MINUTES);
+        }, 1, 10, TimeUnit.SECONDS);
 
         if (TlsSystemConfig.tlsMode != TlsMode.DISABLED) {
             // Register a listener to reload SslContext

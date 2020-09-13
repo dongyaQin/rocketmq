@@ -21,10 +21,12 @@ import java.util.Map;
 public class DispatchRequest {
     private final String topic;
     private final int queueId;
+    // phisical offset in commit log
     private final long commitLogOffset;
     private int msgSize;
     private final long tagsCode;
     private final long storeTimestamp;
+    // record the (count-1) of messages sent to commit log of this topic-queueid
     private final long consumeQueueOffset;
     private final String keys;
     private final boolean success;

@@ -157,6 +157,7 @@ public class HAService {
      * Listens to slave connections to create {@link HAConnection}.
      */
     class AcceptSocketService extends ServiceThread {
+        //default 10912
         private final SocketAddress socketAddressListen;
         private ServerSocketChannel serverSocketChannel;
         private Selector selector;
@@ -275,6 +276,7 @@ public class HAService {
             this.requestsRead = tmp;
         }
 
+        //only check transfer states
         private void doWaitTransfer() {
             synchronized (this.requestsRead) {
                 if (!this.requestsRead.isEmpty()) {
@@ -331,8 +333,10 @@ public class HAService {
         private final ByteBuffer reportOffset = ByteBuffer.allocate(8);
         private SocketChannel socketChannel;
         private Selector selector;
+        // last
         private long lastWriteTimestamp = System.currentTimeMillis();
 
+        // current max wrote offset in commit log
         private long currentReportedOffset = 0;
         private int dispatchPosition = 0;
         private ByteBuffer byteBufferRead = ByteBuffer.allocate(READ_MAX_BUFFER_SIZE);
@@ -359,6 +363,7 @@ public class HAService {
             return needHeart;
         }
 
+        //send to master my max offset in commit log
         private boolean reportSlaveMaxOffset(final long maxOffset) {
             this.reportOffset.position(0);
             this.reportOffset.limit(8);
@@ -552,6 +557,7 @@ public class HAService {
                 try {
                     if (this.connectMaster()) {
 
+                        // if 5 seconds past since last heart beat
                         if (this.isTimeToReportOffset()) {
                             boolean result = this.reportSlaveMaxOffset(this.currentReportedOffset);
                             if (!result) {

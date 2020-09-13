@@ -55,6 +55,7 @@ public class ClientConfig {
     private int persistConsumerOffsetInterval = 1000 * 5;
     private long pullTimeDelayMillsWhenException = 1000;
     private boolean unitMode = false;
+    // 目前看起来在一个进程下可以控制是否是相同的consumer
     private String unitName;
     private boolean vipChannelEnabled = Boolean.parseBoolean(System.getProperty(SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY, "false"));
 

@@ -44,7 +44,7 @@ public class MQClientManager {
         return getOrCreateMQClientInstance(clientConfig, null);
     }
 
-    // 根据clientIp-instanceName或者clientIp-instanceName-unit生成client。 当使用CLUSTERING的时候, instanceName是进程id
+    // 根据clientId: clientIp-instanceName或者clientIp-instanceName-unit生成client。 当使用CLUSTERING的时候, instanceName是进程id
     public MQClientInstance getOrCreateMQClientInstance(final ClientConfig clientConfig, RPCHook rpcHook) {
         String clientId = clientConfig.buildMQClientId();
         MQClientInstance instance = this.factoryTable.get(clientId);

@@ -232,6 +232,7 @@ public class DefaultMessageStore implements MessageStore {
              * 3. Calculate the reput offset according to the consume queue;
              * 4. Make sure the fall-behind messages to be dispatched before starting the commitlog, especially when the broker role are automatically changed.
              */
+            // first file name
             long maxPhysicalPosInLogicQueue = commitLog.getMinOffset();
             for (ConcurrentMap<Integer, ConsumeQueue> maps : this.consumeQueueTable.values()) {
                 for (ConsumeQueue logic : maps.values()) {
@@ -547,6 +548,7 @@ public class DefaultMessageStore implements MessageStore {
         return commitLog;
     }
 
+    // offset: count of msg
     public GetMessageResult getMessage(final String group, final String topic, final int queueId, final long offset,
         final int maxMsgNums,
         final MessageFilter messageFilter) {
@@ -573,6 +575,7 @@ public class DefaultMessageStore implements MessageStore {
 
         ConsumeQueue consumeQueue = findConsumeQueue(topic, queueId);
         if (consumeQueue != null) {
+            // minOffset, maxOffset: count of message
             minOffset = consumeQueue.getMinOffsetInQueue();
             maxOffset = consumeQueue.getMaxOffsetInQueue();
 
@@ -599,6 +602,7 @@ public class DefaultMessageStore implements MessageStore {
                         status = GetMessageStatus.NO_MATCHED_MESSAGE;
 
                         long nextPhyFileStartOffset = Long.MIN_VALUE;
+                        // max physical offset we get from commit log
                         long maxPhyOffsetPulling = 0;
 
                         int i = 0;
@@ -619,6 +623,7 @@ public class DefaultMessageStore implements MessageStore {
 
                             boolean isInDisk = checkInDiskByCommitOffset(offsetPy, maxOffsetPy);
 
+                            //判断当前消息能否继续加入getResult
                             if (this.isTheBatchFull(sizePy, maxMsgNums, getResult.getBufferTotalSize(), getResult.getMessageCount(),
                                 isInDisk)) {
                                 break;
@@ -1234,6 +1239,10 @@ public class DefaultMessageStore implements MessageStore {
         return (maxOffsetPy - offsetPy) > memory;
     }
 
+    //sizePy: msg size of current message
+    //maxMsgNums: max msg nums to get this time
+    //bufferTotal: already gotten msg bytes in the result
+    //messageTotal: already gotten msg count in the result
     private boolean isTheBatchFull(int sizePy, int maxMsgNums, int bufferTotal, int messageTotal, boolean isInDisk) {
 
         if (0 == bufferTotal || 0 == messageTotal) {
@@ -1409,6 +1418,7 @@ public class DefaultMessageStore implements MessageStore {
         return transientStorePool;
     }
 
+    // execute when load message store
     private void putConsumeQueue(final String topic, final int queueId, final ConsumeQueue consumeQueue) {
         ConcurrentMap<Integer/* queueId */, ConsumeQueue> map = this.consumeQueueTable.get(topic);
         if (null == map) {
@@ -1767,6 +1777,7 @@ public class DefaultMessageStore implements MessageStore {
         }
     }
 
+    //only used to flush, not write to consume queue
     class FlushConsumeQueueService extends ServiceThread {
         private static final int RETRY_TIMES_OVER = 3;
         private long lastFlushTimestamp = 0;
@@ -1838,6 +1849,7 @@ public class DefaultMessageStore implements MessageStore {
 
     class ReputMessageService extends ServiceThread {
 
+        //physical offset in commit log
         private volatile long reputFromOffset = 0;
 
         public long getReputFromOffset() {
@@ -1881,6 +1893,7 @@ public class DefaultMessageStore implements MessageStore {
             }
             for (boolean doNext = true; this.isCommitLogAvailable() && doNext; ) {
 
+                //？？？
                 if (DefaultMessageStore.this.getMessageStoreConfig().isDuplicationEnable()
                     && this.reputFromOffset >= DefaultMessageStore.this.getConfirmOffset()) {
                     break;

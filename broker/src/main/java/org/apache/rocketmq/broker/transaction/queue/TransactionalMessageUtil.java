@@ -28,6 +28,7 @@ public class TransactionalMessageUtil {
         return MixAll.RMQ_SYS_TRANS_OP_HALF_TOPIC;
     }
 
+    // this is for transaction prepare message
     public static String buildHalfTopic() {
         return MixAll.RMQ_SYS_TRANS_HALF_TOPIC;
     }

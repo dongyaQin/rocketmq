@@ -306,6 +306,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
 
         long offset = consumeRequest.getProcessQueue().removeMessage(consumeRequest.getMsgs());
         if (offset >= 0 && !consumeRequest.getProcessQueue().isDropped()) {
+            // update consume offset so that can reconsume in cluster mode
             this.defaultMQPushConsumerImpl.getOffsetStore().updateOffset(consumeRequest.getMessageQueue(), offset, true);
         }
     }

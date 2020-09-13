@@ -19,6 +19,8 @@ package org.apache.rocketmq.store;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
+
+import org.apache.rocketmq.common.MyUtil;
 import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
@@ -40,7 +42,9 @@ public class ConsumeQueue {
 
     private final String storePath;
     private final int mappedFileSize;
+    // max physic offset in commit log
     private long maxPhysicOffset = -1;
+    // min offset in this consumequeue whose content exists in commit log
     private volatile long minLogicOffset = 0;
     private ConsumeQueueExt consumeQueueExt = null;
 
@@ -97,6 +101,7 @@ public class ConsumeQueue {
             MappedFile mappedFile = mappedFiles.get(index);
             ByteBuffer byteBuffer = mappedFile.sliceByteBuffer();
             long processOffset = mappedFile.getFileFromOffset();
+            // consume queue里最大的有正常数据的offset
             long mappedFileOffset = 0;
             long maxExtAddr = 1;
             while (true) {
@@ -139,6 +144,7 @@ public class ConsumeQueue {
                 }
             }
 
+//            MyUtil.print("Consume queue recover=====>"+processOffset+"\t"+this.queueId+"\t"+this.topic);
             processOffset += mappedFileOffset;
             this.mappedFileQueue.setFlushedWhere(processOffset);
             this.mappedFileQueue.setCommittedWhere(processOffset);
@@ -422,6 +428,10 @@ public class ConsumeQueue {
         this.defaultMessageStore.getRunningFlags().makeLogicsQueueError();
     }
 
+    //offset: commit log physical offset
+    //size: msg size
+    //tagsCode: tagsCode
+    //cqOffset: msgs count have wrote to this consumequeue
     private boolean putMessagePositionInfo(final long offset, final int size, final long tagsCode,
         final long cqOffset) {
 
@@ -436,10 +446,12 @@ public class ConsumeQueue {
         this.byteBufferIndex.putInt(size);
         this.byteBufferIndex.putLong(tagsCode);
 
+        //offset will wrote to
         final long expectLogicOffset = cqOffset * CQ_STORE_UNIT_SIZE;
 
         MappedFile mappedFile = this.mappedFileQueue.getLastMappedFile(expectLogicOffset);
         if (mappedFile != null) {
+            MyUtil.print("queue id: "+this.queueId+"\noffset: "+offset+"\nsize: "+size+"\ntagsCode: "+tagsCode+"\ncqOffset: "+cqOffset+"\nmappedFile.getWrotePosition: "+mappedFile.getWrotePosition(), log);
 
             if (mappedFile.isFirstCreateInQueue() && cqOffset != 0 && mappedFile.getWrotePosition() == 0) {
                 this.minLogicOffset = expectLogicOffset;

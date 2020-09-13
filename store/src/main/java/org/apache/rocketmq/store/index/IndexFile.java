@@ -186,6 +186,7 @@ public class IndexFile {
         return result;
     }
 
+    //put physical offsets in commit log to list phyOffsets according to key
     public void selectPhyOffset(final List<Long> phyOffsets, final String key, final int maxNum,
         final long begin, final long end, boolean lock) {
         if (this.mappedFile.hold()) {

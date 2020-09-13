@@ -37,6 +37,7 @@ public class HAConnection {
     private ReadSocketService readSocketService;
 
     private volatile long slaveRequestOffset = -1;
+    // salve offset
     private volatile long slaveAckOffset = -1;
 
     public HAConnection(final HAService haService, final SocketChannel socketChannel) throws IOException {
@@ -160,6 +161,7 @@ public class HAConnection {
                         readSizeZeroTimes = 0;
                         this.lastReadTimestamp = HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now();
                         if ((this.byteBufferRead.position() - this.processPosition) >= 8) {
+                            // position should be multiple of 8
                             int pos = this.byteBufferRead.position() - (this.byteBufferRead.position() % 8);
                             long readOffset = this.byteBufferRead.getLong(pos - 8);
                             this.processPosition = pos;
@@ -197,6 +199,7 @@ public class HAConnection {
         private final int headerSize = 8 + 4;
         private final ByteBuffer byteBufferHeader = ByteBuffer.allocate(headerSize);
         private long nextTransferFromWhere = -1;
+        // data need to be sent shi time
         private SelectMappedBufferResult selectMappedBufferResult;
         private boolean lastWriteOver = true;
         private long lastWriteTimestamp = System.currentTimeMillis();
@@ -223,6 +226,7 @@ public class HAConnection {
 
                     if (-1 == this.nextTransferFromWhere) {
                         if (0 == HAConnection.this.slaveRequestOffset) {
+                            // transfer from begin offset of the map file
                             long masterOffset = HAConnection.this.haService.getDefaultMessageStore().getCommitLog().getMaxOffset();
                             masterOffset =
                                 masterOffset

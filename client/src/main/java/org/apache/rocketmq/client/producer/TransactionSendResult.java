@@ -29,4 +29,10 @@ public class TransactionSendResult extends SendResult {
     public void setLocalTransactionState(LocalTransactionState localTransactionState) {
         this.localTransactionState = localTransactionState;
     }
+
+    @Override
+    public String toString() {
+        return "SendResult [sendStatus=" + super.getSendStatus() + ", msgId=" + super.getMsgId() + ", offsetMsgId=" + super.getOffsetMsgId() + ", messageQueue=" + super.getMessageQueue()
+                + ", queueOffset=" + super.getQueueOffset() + ", localTransactionState=" + localTransactionState.toString() + "]";
+    }
 }

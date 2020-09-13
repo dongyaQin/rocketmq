@@ -43,13 +43,7 @@ import org.apache.rocketmq.client.log.ClientLogger;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SendStatus;
-import org.apache.rocketmq.common.AclConfig;
-import org.apache.rocketmq.common.DataVersion;
-import org.apache.rocketmq.common.MQVersion;
-import org.apache.rocketmq.common.MixAll;
-import org.apache.rocketmq.common.PlainAccessConfig;
-import org.apache.rocketmq.common.TopicConfig;
-import org.apache.rocketmq.common.UtilAll;
+import org.apache.rocketmq.common.*;
 import org.apache.rocketmq.common.admin.ConsumeStats;
 import org.apache.rocketmq.common.admin.TopicStatsTable;
 import org.apache.rocketmq.common.message.Message;
@@ -418,6 +412,7 @@ public class MQClientAPIImpl {
 
     }
 
+    // sync SEND
     public SendResult sendMessage(
         final String addr,
         final String brokerName,
@@ -520,14 +515,18 @@ public class MQClientAPIImpl {
         final DefaultMQProducerImpl producer
     ) throws InterruptedException, RemotingException {
         final long beginStartTime = System.currentTimeMillis();
+        MyUtil.print("begin invokeAsync=>");
         this.remotingClient.invokeAsync(addr, request, timeoutMillis, new InvokeCallback() {
             @Override
             public void operationComplete(ResponseFuture responseFuture) {
                 long cost = System.currentTimeMillis() - beginStartTime;
+                //正常情况下，通过processResponseCommand接受之后，response不为null，但是通过周期性的scanResponseTable则可能为null
                 RemotingCommand response = responseFuture.getResponseCommand();
+                MyUtil.print("async response=>"+response, log);
                 if (null == sendCallback && response != null) {
 
                     try {
+                        //异步情况下，可以有在超时时间+1s内获得结果，如果大于超时时间+1s，则
                         SendResult sendResult = MQClientAPIImpl.this.processSendResponse(brokerName, msg, response);
                         if (context != null && sendResult != null) {
                             context.setSendResult(sendResult);
@@ -550,6 +549,7 @@ public class MQClientAPIImpl {
                         }
 
                         try {
+                            //如果有callback，则执行callback
                             sendCallback.onSuccess(sendResult);
                         } catch (Throwable e) {
                         }
@@ -561,6 +561,7 @@ public class MQClientAPIImpl {
                             retryTimesWhenSendFailed, times, e, context, false, producer);
                     }
                 } else {
+                    //没有拿到请求结果
                     producer.updateFaultItem(brokerName, System.currentTimeMillis() - responseFuture.getBeginTimestamp(), true);
                     if (!responseFuture.isSendRequestOK()) {
                         MQClientException ex = new MQClientException("send request failed", responseFuture.getCause());
@@ -579,6 +580,7 @@ public class MQClientAPIImpl {
                 }
             }
         });
+        MyUtil.print("after invokeAsync=>");
     }
 
     private void onExceptionImpl(final String brokerName,

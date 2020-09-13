@@ -20,10 +20,12 @@ import java.nio.ByteBuffer;
 
 public class SelectMappedBufferResult {
 
+    // start phisical offset in commit log
     private final long startOffset;
 
     private final ByteBuffer byteBuffer;
 
+    // how many bytes can be read from this byteBuffer, equal to byteBuffer's limit
     private int size;
 
     private MappedFile mappedFile;

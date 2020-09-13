@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.apache.rocketmq.common.MyUtil;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.logging.InternalLogger;
@@ -37,15 +39,19 @@ public class MappedFileQueue {
 
     private final String storePath;
 
+    // bytes of file
     private final int mappedFileSize;
 
     private final CopyOnWriteArrayList<MappedFile> mappedFiles = new CopyOnWriteArrayList<MappedFile>();
 
     private final AllocateMappedFileService allocateMappedFileService;
 
+    // 记录最新的已经flush到disk的offset，可用来计算到哪一个MappedFile了
     private long flushedWhere = 0;
+    // 记录最新的已经commite的offset
     private long committedWhere = 0;
 
+    //最后appendMessage的时间
     private volatile long storeTimestamp = 0;
 
     public MappedFileQueue(final String storePath, int mappedFileSize,
@@ -55,6 +61,7 @@ public class MappedFileQueue {
         this.allocateMappedFileService = allocateMappedFileService;
     }
 
+    // 检查mappedFiles中的相邻两个MappedFile的offset差距是不是this.mappedFileSize
     public void checkSelf() {
 
         if (!this.mappedFiles.isEmpty()) {
@@ -74,6 +81,7 @@ public class MappedFileQueue {
         }
     }
 
+    //根据file.lastModified找到第一个>=timestamp的MappedFile
     public MappedFile getMappedFileByTime(final long timestamp) {
         Object[] mfs = this.copyMappedFiles(0);
 
@@ -101,6 +109,7 @@ public class MappedFileQueue {
         return mfs;
     }
 
+    // 删除FileFromOffset大于offset的那些MappedFile，并且设置Offset所在的MappedFile的一些position
     public void truncateDirtyFiles(long offset) {
         List<MappedFile> willRemoveFiles = new ArrayList<MappedFile>();
 
@@ -117,6 +126,7 @@ public class MappedFileQueue {
                 }
             }
         }
+//        MyUtil.print("remove files====>"+willRemoveFiles);
 
         this.deleteExpiredFile(willRemoveFiles);
     }

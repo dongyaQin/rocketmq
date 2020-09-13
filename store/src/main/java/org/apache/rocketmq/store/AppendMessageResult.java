@@ -22,7 +22,7 @@ package org.apache.rocketmq.store;
 public class AppendMessageResult {
     // Return code
     private AppendMessageStatus status;
-    // Where to start writing
+    // Where to start writing, phisical offset
     private long wroteOffset;
     // Write Bytes
     private int wroteBytes;

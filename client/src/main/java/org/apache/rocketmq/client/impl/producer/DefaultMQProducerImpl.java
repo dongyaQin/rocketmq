@@ -66,6 +66,7 @@ import org.apache.rocketmq.client.producer.TransactionListener;
 import org.apache.rocketmq.client.producer.TransactionMQProducer;
 import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.MyUtil;
 import org.apache.rocketmq.common.ServiceState;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.help.FAQUrl;
@@ -579,13 +580,11 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                             callTimeout = true;
                             break;
                         }
-
                         sendResult = this.sendKernelImpl(msg, mq, communicationMode, sendCallback, topicPublishInfo, timeout - costTime);
                         endTimestamp = System.currentTimeMillis();
                         this.updateFaultItem(mq.getBrokerName(), endTimestamp - beginTimestampPrev, false);
                         switch (communicationMode) {
                             case ASYNC:
-                                return null;
                             case ONEWAY:
                                 return null;
                             case SYNC:
@@ -692,7 +691,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
             this.mQClientFactory.updateTopicRouteInfoFromNameServer(topic);
             topicPublishInfo = this.topicPublishInfoTable.get(topic);
         }
-
+        MyUtil.print("TopicPublishInfo====>"+topicPublishInfo);
         if (topicPublishInfo.isHaveTopicRouterInfo() || topicPublishInfo.ok()) {
             return topicPublishInfo;
         } else {
@@ -830,6 +829,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                         if (timeout < costTimeAsync) {
                             throw new RemotingTooMuchRequestException("sendKernelImpl call timeout");
                         }
+                        MyUtil.print("begin sendMessage in async+++++");
                         sendResult = this.mQClientFactory.getMQClientAPIImpl().sendMessage(
                             brokerAddr,
                             mq.getBrokerName(),
@@ -843,6 +843,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                             this.defaultMQProducer.getRetryTimesWhenSendAsyncFailed(),
                             context,
                             this);
+                        MyUtil.print("after sendMessage in async+++++");
                         break;
                     case ONEWAY:
                     case SYNC:

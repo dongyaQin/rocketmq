@@ -53,6 +53,7 @@ import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import org.apache.rocketmq.client.log.ClientLogger;
 import org.apache.rocketmq.client.stat.ConsumerStatsManager;
 import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.MyUtil;
 import org.apache.rocketmq.common.ServiceState;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
@@ -211,6 +212,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
     }
 
     public void pullMessage(final PullRequest pullRequest) {
+        MyUtil.print("begain to pull message: "+pullRequest);
         final ProcessQueue processQueue = pullRequest.getProcessQueue();
         if (processQueue.isDropped()) {
             log.info("the pull request[{}] is dropped.", pullRequest.toString());
@@ -498,6 +500,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
         return this.mQClientFactory.getMQAdminImpl().queryMessageByUniqKey(topic, uniqKey);
     }
 
+    // 用户消费消息的逻辑
     public void registerMessageListener(MessageListener messageListener) {
         this.messageListenerInner = messageListener;
     }
@@ -649,7 +652,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
         this.updateTopicSubscribeInfoWhenSubscriptionChanged();
         this.mQClientFactory.checkClientInBroker();
         this.mQClientFactory.sendHeartbeatToAllBrokerWithLock();
-        this.mQClientFactory.rebalanceImmediately();
+//        this.mQClientFactory.rebalanceImmediately();
     }
 
     private void checkConfig() throws MQClientException {
@@ -822,6 +825,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
         }
     }
 
+    // retry topic
     private void copySubscription() throws MQClientException {
         try {
             Map<String, String> sub = this.defaultMQPushConsumer.getSubscription();

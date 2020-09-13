@@ -176,6 +176,7 @@ public class IndexService {
                         f.selectPhyOffset(phyOffsets, buildKey(topic, key), maxNum, begin, end, lastFile);
                     }
 
+                    // f的BeginTimestamp都小于查询的begin了，那之前的EndTimestamp必定小于begin，所直接skip
                     if (f.getBeginTimestamp() < begin) {
                         break;
                     }

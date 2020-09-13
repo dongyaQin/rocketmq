@@ -48,8 +48,11 @@ public class MappedFile extends ReferenceResource {
     private static final AtomicLong TOTAL_MAPPED_VIRTUAL_MEMORY = new AtomicLong(0);
 
     private static final AtomicInteger TOTAL_MAPPED_FILES = new AtomicInteger(0);
+    //记录当前已经写了多少Byte了
     protected final AtomicInteger wrotePosition = new AtomicInteger(0);
+    //记录当前已经commit(put data from writeBuffer to fileChannnel)多少Byte了
     protected final AtomicInteger committedPosition = new AtomicInteger(0);
+    // record how many bytes have already flushed to disk
     private final AtomicInteger flushedPosition = new AtomicInteger(0);
     protected int fileSize;
     protected FileChannel fileChannel;
@@ -62,6 +65,7 @@ public class MappedFile extends ReferenceResource {
     private long fileFromOffset;
     private File file;
     private MappedByteBuffer mappedByteBuffer;
+    // continuous updated timestamp when execute appendMessagesInner
     private volatile long storeTimestamp = 0;
     private boolean firstCreateInQueue = false;
 
@@ -87,6 +91,7 @@ public class MappedFile extends ReferenceResource {
         }
     }
 
+    // unmap this buffer
     public static void clean(final ByteBuffer buffer) {
         if (buffer == null || !buffer.isDirect() || buffer.capacity() == 0)
             return;
@@ -204,6 +209,7 @@ public class MappedFile extends ReferenceResource {
 
         if (currentPos < this.fileSize) {
             ByteBuffer byteBuffer = writeBuffer != null ? writeBuffer.slice() : this.mappedByteBuffer.slice();
+            //由于mappedByteBuffer/writeBuffer的position一直是0
             byteBuffer.position(currentPos);
             AppendMessageResult result;
             if (messageExt instanceof MessageExtBrokerInner) {
@@ -270,6 +276,7 @@ public class MappedFile extends ReferenceResource {
      */
     public int flush(final int flushLeastPages) {
         if (this.isAbleToFlush(flushLeastPages)) {
+            //increase a refrence
             if (this.hold()) {
                 int value = getReadPosition();
 
@@ -294,6 +301,7 @@ public class MappedFile extends ReferenceResource {
         return this.getFlushedPosition();
     }
 
+    // put data from writeBuffer to fileChannnel if writeBuffer is not null
     public int commit(final int commitLeastPages) {
         if (writeBuffer == null) {
             //no need to commit data to file channel, so just regard wrotePosition as committedPosition.
@@ -317,6 +325,7 @@ public class MappedFile extends ReferenceResource {
         return this.committedPosition.get();
     }
 
+    // put data from writeBuffer to fileChannnel
     protected void commit0(final int commitLeastPages) {
         int writePos = this.wrotePosition.get();
         int lastCommittedPosition = this.committedPosition.get();
@@ -337,6 +346,7 @@ public class MappedFile extends ReferenceResource {
 
     private boolean isAbleToFlush(final int flushLeastPages) {
         int flush = this.flushedPosition.get();
+        //already write bytes
         int write = getReadPosition();
 
         if (this.isFull()) {

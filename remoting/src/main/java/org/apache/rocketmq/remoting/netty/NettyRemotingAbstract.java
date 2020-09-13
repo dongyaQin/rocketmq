@@ -42,6 +42,7 @@ import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.remoting.ChannelEventListener;
 import org.apache.rocketmq.remoting.InvokeCallback;
 import org.apache.rocketmq.remoting.RPCHook;
+import org.apache.rocketmq.remoting.common.MyUtil;
 import org.apache.rocketmq.remoting.common.Pair;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.apache.rocketmq.remoting.common.SemaphoreReleaseOnlyOnce;
@@ -190,6 +191,7 @@ public abstract class NettyRemotingAbstract {
      * @param cmd request command.
      */
     public void processRequestCommand(final ChannelHandlerContext ctx, final RemotingCommand cmd) {
+        MyUtil.print("processRequestCommand: "+cmd, log);
         final Pair<NettyRequestProcessor, ExecutorService> matched = this.processorTable.get(cmd.getCode());
         final Pair<NettyRequestProcessor, ExecutorService> pair = null == matched ? this.defaultRequestProcessor : matched;
         final int opaque = cmd.getOpaque();
@@ -287,6 +289,7 @@ public abstract class NettyRemotingAbstract {
      */
     public void processResponseCommand(ChannelHandlerContext ctx, RemotingCommand cmd) {
         final int opaque = cmd.getOpaque();
+        MyUtil.print("processResponseCommand: "+cmd, log);
         final ResponseFuture responseFuture = responseTable.get(opaque);
         if (responseFuture != null) {
             responseFuture.setResponseCommand(cmd);
@@ -398,6 +401,7 @@ public abstract class NettyRemotingAbstract {
 
         for (ResponseFuture rf : rfList) {
             try {
+                System.out.println("222222222");
                 executeInvokeCallback(rf);
             } catch (Throwable e) {
                 log.warn("scanResponseTable, operationComplete Exception", e);
@@ -432,6 +436,7 @@ public abstract class NettyRemotingAbstract {
             });
 
             RemotingCommand responseCommand = responseFuture.waitResponse(timeoutMillis);
+            // if no response return in timeout, will through exception
             if (null == responseCommand) {
                 if (responseFuture.isSendRequestOK()) {
                     throw new RemotingTimeoutException(RemotingHelper.parseSocketAddressAddr(addr), timeoutMillis,
@@ -502,6 +507,7 @@ public abstract class NettyRemotingAbstract {
             responseFuture.setSendRequestOK(false);
             responseFuture.putResponse(null);
             try {
+                System.out.println("333333333");
                 executeInvokeCallback(responseFuture);
             } catch (Throwable e) {
                 log.warn("execute callback in requestFail, and callback throw", e);
