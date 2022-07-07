@@ -60,7 +60,7 @@ public class Producer {
                     "TagA" /* Tag */,
                     ("Hello RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET) /* Message body */
                 );
-
+                msg.setDelayTimeLevel(1);
                 /*
                  * Call send message to deliver message to one of brokers.
                  */

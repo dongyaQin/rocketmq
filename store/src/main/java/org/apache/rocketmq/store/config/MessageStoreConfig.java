@@ -64,7 +64,7 @@ public class MessageStoreConfig {
     // ConsumeQueue flush interval
     private int flushIntervalConsumeQueue = 1000;
     // Resource reclaim interval
-    private int cleanResourceInterval = 10000;
+    private int cleanResourceInterval = 5000;
     // CommitLog removal interval
     private int deleteCommitLogFilesInterval = 100;
     // ConsumeQueue removal interval

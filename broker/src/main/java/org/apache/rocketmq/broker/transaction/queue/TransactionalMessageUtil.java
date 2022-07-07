@@ -24,6 +24,7 @@ public class TransactionalMessageUtil {
     public static final String REMOVETAG = "d";
     public static Charset charset = Charset.forName("utf-8");
 
+    // commit or rollback message, will use this topic to save op message
     public static String buildOpTopic() {
         return MixAll.RMQ_SYS_TRANS_OP_HALF_TOPIC;
     }

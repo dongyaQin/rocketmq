@@ -131,6 +131,7 @@ public class MappedFileQueue {
         this.deleteExpiredFile(willRemoveFiles);
     }
 
+    // delete from this.mappedFiles
     void deleteExpiredFile(List<MappedFile> files) {
 
         if (!files.isEmpty()) {
@@ -359,6 +360,7 @@ public class MappedFileQueue {
             for (int i = 0; i < mfsLength; i++) {
                 MappedFile mappedFile = (MappedFile) mfs[i];
                 long liveMaxTimestamp = mappedFile.getLastModifiedTimestamp() + expiredTime;
+//                MyUtil.print(mappedFile.getFileName()+" last modified timestamp: "+mappedFile.getLastModifiedTimestamp() +" need delete: "+(System.currentTimeMillis() >= liveMaxTimestamp),log);
                 if (System.currentTimeMillis() >= liveMaxTimestamp || cleanImmediately) {
                     if (mappedFile.destroy(intervalForcibly)) {
                         files.add(mappedFile);
@@ -548,6 +550,7 @@ public class MappedFileQueue {
         return size;
     }
 
+    // 如果第一个mappedFile不available，则重新删除
     public boolean retryDeleteFirstFile(final long intervalForcibly) {
         MappedFile mappedFile = this.getFirstMappedFile();
         if (mappedFile != null) {

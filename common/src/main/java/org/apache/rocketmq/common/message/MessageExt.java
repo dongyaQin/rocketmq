@@ -33,11 +33,13 @@ public class MessageExt extends Message {
 
     private int storeSize;
 
+    // the message index in this queueId of the topic
     private long queueOffset;
     private int sysFlag;
     private long bornTimestamp;
     private SocketAddress bornHost;
 
+    // in putMessage, first set this timestamp to record what time to save message
     private long storeTimestamp;
     private SocketAddress storeHost;
     private String msgId;
