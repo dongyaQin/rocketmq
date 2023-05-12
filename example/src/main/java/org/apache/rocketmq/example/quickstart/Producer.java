@@ -33,6 +33,7 @@ public class Producer {
          */
         DefaultMQProducer producer = new DefaultMQProducer("please_rename_unique_group_name");
         producer.setNamesrvAddr("localhost:9876");
+        producer.createTopic();
         /*
          * Specify name server addresses.
          * <p/>

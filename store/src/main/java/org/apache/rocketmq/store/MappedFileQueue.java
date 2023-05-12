@@ -39,7 +39,7 @@ public class MappedFileQueue {
 
     private final String storePath;
 
-    // bytes of file
+    // bytes of file: 1G
     private final int mappedFileSize;
 
     private final CopyOnWriteArrayList<MappedFile> mappedFiles = new CopyOnWriteArrayList<MappedFile>();
@@ -109,7 +109,7 @@ public class MappedFileQueue {
         return mfs;
     }
 
-    // 删除FileFromOffset大于offset的那些MappedFile，并且设置Offset所在的MappedFile的一些position
+    // 删除FileFromOffset小于offset的那些MappedFile，并且设置Offset所在的MappedFile的一些position
     public void truncateDirtyFiles(long offset) {
         List<MappedFile> willRemoveFiles = new ArrayList<MappedFile>();
 

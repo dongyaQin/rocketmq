@@ -72,7 +72,9 @@ public class MappedFile extends ReferenceResource {
     public MappedFile() {
     }
 
+    //fileSize: 1G
     public MappedFile(final String fileName, final int fileSize) throws IOException {
+        System.out.println("Init MappedFile"+fileName+", fileSize===>"+fileSize);
         init(fileName, fileSize);
     }
 
